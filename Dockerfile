@@ -23,13 +23,16 @@ RUN rm -rf /var/lib/mysql/*
 ADD create_mysql_admin_user.sh /create_mysql_admin_user.sh
 RUN chmod 755 /*.sh
 
+# enable phpmyadmin
+RUN ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf && a2enconf phpmyadmin
+
 # config to enable .htaccess
 ADD apache_default /etc/apache2/sites-available/000-default.conf
 RUN a2enmod rewrite
 
 # Configure /app folder with sample app
 RUN git clone https://github.com/fermayo/hello-world-lamp.git /app
-RUN mkdir -p /app && rm -fr /var/www/html && ln -s /app /var/www/html && ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
+RUN mkdir -p /app && rm -fr /var/www/html && ln -s /app /var/www/html
 
 #Environment variables to configure php
 ENV PHP_UPLOAD_MAX_FILESIZE 10M
@@ -37,9 +40,6 @@ ENV PHP_POST_MAX_SIZE 10M
 
 # Add volumes for MySQL 
 VOLUME  ["/etc/mysql", "/var/lib/mysql" ]
-
-# config to enable phpmyadmin
-RUN a2enconf phpmyadmin
 
 EXPOSE 80 3306
 CMD ["/run.sh"]
